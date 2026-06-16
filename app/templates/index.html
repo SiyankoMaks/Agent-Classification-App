@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Сравнение ML-прогноза и LLM-оценки</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fa;
+      --panel: #ffffff;
+      --text: #1d2430;
+      --muted: #657083;
+      --line: #d9e1ec;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --danger: #b42318;
+      --ok-bg: #eef7f1;
+      --ok-line: #b8dcc4;
+      --shadow: 0 10px 28px rgba(29, 36, 48, 0.07);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.35;
+    }
+    .shell {
+      width: min(1360px, calc(100% - 24px));
+      margin: 14px auto 24px;
+    }
+    header { margin-bottom: 12px; }
+    h1 {
+      margin: 0 0 5px;
+      font-size: 26px;
+      font-weight: 700;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 430px;
+      gap: 12px;
+      align-items: start;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+    form {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px 10px;
+    }
+    label {
+      display: grid;
+      gap: 4px;
+      color: #344054;
+      font-size: 12px;
+    }
+    input, select {
+      width: 100%;
+      min-height: 32px;
+      border: 1px solid #c9d3df;
+      border-radius: 6px;
+      padding: 6px 8px;
+      color: var(--text);
+      background: #fff;
+      font-size: 13px;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      outline: 2px solid rgba(37, 99, 235, 0.16);
+    }
+    .actions {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 2px;
+    }
+    button {
+      min-height: 36px;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 16px;
+      color: #fff;
+      background: var(--primary);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover { background: var(--primary-dark); }
+    .result h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+    .result-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .result-head h2 {
+      margin: 0;
+    }
+    .result-note {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: 6px;
+      background: var(--ok-bg);
+      border: 1px solid var(--ok-line);
+      font-weight: 700;
+    }
+    .meta {
+      margin: 9px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .probability {
+      display: grid;
+      gap: 7px;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #e1e8f0;
+      border-radius: 8px;
+      background: #fbfdff;
+    }
+    .probability-row {
+      display: grid;
+      grid-template-columns: 76px 1fr 48px;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+    }
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: #e5eaf1;
+      overflow: hidden;
+    }
+    .bar span {
+      display: block;
+      height: 100%;
+      background: var(--primary);
+    }
+    .error {
+      color: var(--danger);
+      border-color: #f2b8b5;
+      background: #fff4f2;
+    }
+    .explanation {
+      position: relative;
+      margin-top: 14px;
+      padding: 13px 14px 13px 16px;
+      border: 1px solid #bfdbfe;
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(239, 246, 255, 0.96), rgba(255, 255, 255, 0.98));
+      white-space: pre-wrap;
+      color: #253044;
+      font-size: 13.5px;
+      line-height: 1.55;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.08);
+    }
+    .explanation strong {
+      color: var(--primary-dark);
+    }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 20px, 1360px); }
+      form { grid-template-columns: 1fr; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <h1>Сравнение ML-прогноза и LLM-оценки</h1>
+      <p class="subtitle">Введите признаки профиля: модель рассчитает класс риска, а LLM даст собственный вердикт и сопоставит его с прогнозом.</p>
+    </header>
+
+    <div class="layout">
+      <section class="panel">
+        <form method="post" action="/predict">
+          {% for field in fields %}
+            <label>
+              <span>{{ field.label }}</span>
+              {% if field.type == "select" %}
+                <select name="{{ field.name }}">
+                  {% for option in field.options %}
+                    <option value="{{ option }}" {% if values[field.name]|string == option|string %}selected{% endif %}>{{ option }}</option>
+                  {% endfor %}
+                </select>
+              {% else %}
+                <input
+                  name="{{ field.name }}"
+                  type="{{ field.type }}"
+                  step="{{ field.step }}"
+                  {% if field.min is defined %}min="{{ field.min }}"{% endif %}
+                  {% if field.max is defined %}max="{{ field.max }}"{% endif %}
+                  value="{{ values[field.name] }}"
+                  required
+                >
+              {% endif %}
+            </label>
+          {% endfor %}
+          <div class="actions">
+            <button type="submit">Сравнить прогнозы</button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="panel result {% if error %}error{% endif %}">
+        <div class="result-head">
+          <div>
+            <h2>Итог модели</h2>
+            <p class="result-note">Вероятности классов и сравнение с LLM</p>
+          </div>
+        </div>
+        {% if error %}
+          <p>{{ error }}</p>
+        {% elif result %}
+          <div class="badge">{{ result.prediction }}</div>
+          <p class="meta">Модель: {{ result.model_name }}</p>
+          {% if result.probabilities %}
+            <div class="probability">
+              {% for class_name, probability in result.probabilities.items() %}
+                <div class="probability-row">
+                  <span>{{ class_name }}</span>
+                  <div class="bar"><span style="width: {{ probability * 100 }}%"></span></div>
+                  <strong>{{ (probability * 100)|round(1) }}%</strong>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% if explanation %}
+            <div class="explanation">
+              <div>{{ explanation }}</div>
+            </div>
+          {% endif %}
+        {% else %}
+          <p class="meta">После отправки формы здесь появятся итог модели, вероятности по классам и сравнительный анализ LLM.</p>
+        {% endif %}
+      </aside>
+    </div>
+  </main>
+</body>
+</html>
