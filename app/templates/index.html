@@ -106,7 +106,7 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .result-head h2 {
       margin: 0;
@@ -127,15 +127,15 @@
       font-weight: 700;
     }
     .meta {
-      margin: 9px 0;
+      margin: 7px 0;
       color: var(--muted);
       font-size: 13px;
     }
     .probability {
       display: grid;
-      gap: 7px;
-      margin-top: 10px;
-      padding: 10px;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 8px;
       border: 1px solid #e1e8f0;
       border-radius: 8px;
       background: #fbfdff;
@@ -165,18 +165,20 @@
     }
     .explanation {
       position: relative;
-      margin-top: 14px;
-      padding: 13px 14px 13px 16px;
+      margin-top: 10px;
+      padding: 9px 12px 9px 14px;
       border: 1px solid #bfdbfe;
       border-left: 4px solid var(--primary);
       border-radius: 8px;
       background:
         linear-gradient(180deg, rgba(239, 246, 255, 0.96), rgba(255, 255, 255, 0.98));
-      white-space: pre-wrap;
       color: #253044;
       font-size: 13.5px;
-      line-height: 1.55;
+      line-height: 1.45;
       box-shadow: 0 8px 18px rgba(37, 99, 235, 0.08);
+    }
+    .explanation-text {
+      white-space: pre-wrap;
     }
     .explanation strong {
       color: var(--primary-dark);
@@ -255,7 +257,7 @@
           {% endif %}
           {% if explanation %}
             <div class="explanation">
-              <div>{{ explanation }}</div>
+              <div class="explanation-text">{{ explanation }}</div>
             </div>
           {% endif %}
         {% else %}
